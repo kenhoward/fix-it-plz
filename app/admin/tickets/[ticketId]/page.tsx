@@ -5,6 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { AdminHeader } from "@/components/admin/admin-header";
 import Link from "next/link";
+import { StatusBadge } from "@/components/status-badge";
+import { CATEGORY_CONFIG, formatDate } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -41,17 +43,6 @@ const STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelled", className: "border-slate-300 bg-slate-50 text-slate-500", active: "ring-2 ring-slate-400" },
 ];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  fix: "🔧 Fix",
-  install: "🔨 Install",
-  replace: "🔄 Replace",
-  other: "📋 Other",
-};
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleString();
-}
-
 // ── Page ─────────────────────────────────────────────────────────────
 
 export default function AdminTicketDetailPage() {
@@ -66,8 +57,10 @@ export default function AdminTicketDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [changingStatus, setChangingStatus] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
   const [comment, setComment] = useState("");
   const [addingComment, setAddingComment] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !authenticated) {
@@ -97,6 +90,7 @@ export default function AdminTicketDetailPage() {
   async function handleStatusChange(newStatus: string) {
     if (!ticket || newStatus === ticket.status || changingStatus) return;
     setChangingStatus(true);
+    setStatusError(null);
     try {
       const res = await fetch(`/api/admin/tickets/${ticketId}`, {
         method: "PATCH",
@@ -105,8 +99,8 @@ export default function AdminTicketDetailPage() {
       });
       if (!res.ok) throw new Error("Failed to update status");
       await fetchTicket();
-    } catch {
-      // Could show error — for now just re-fetch to show current state
+    } catch (err) {
+      setStatusError(err instanceof Error ? err.message : "Failed to update status");
       await fetchTicket();
     } finally {
       setChangingStatus(false);
@@ -117,17 +111,18 @@ export default function AdminTicketDetailPage() {
     e.preventDefault();
     if (!comment.trim() || addingComment) return;
     setAddingComment(true);
+    setCommentError(null);
     try {
       const res = await fetch(`/api/admin/tickets/${ticketId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: comment.trim() }),
       });
-      if (!res.ok) throw new Error("Failed to add comment");
+      if (!res.ok) throw new Error("Failed to add note");
       setComment("");
       await fetchTicket();
-    } catch {
-      // Could show error
+    } catch (err) {
+      setCommentError(err instanceof Error ? err.message : "Failed to add note");
     } finally {
       setAddingComment(false);
     }
@@ -148,9 +143,22 @@ export default function AdminTicketDetailPage() {
       <div className="flex flex-1 flex-col">
         <AdminHeader />
         <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
-          <div className="h-8 w-32 animate-pulse rounded-lg bg-slate-200" />
-          <div className="mt-4 h-48 animate-pulse rounded-2xl bg-slate-200" />
-          <div className="mt-4 h-32 animate-pulse rounded-2xl bg-slate-200" />
+          <div className="h-5 w-24 animate-pulse rounded bg-slate-200" />
+          <div className="mt-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <div className="h-6 w-3/5 animate-pulse rounded bg-slate-200" />
+            <div className="mt-3 h-4 w-4/5 animate-pulse rounded bg-slate-100" />
+            <div className="mt-4 flex gap-3">
+              <div className="h-4 w-16 animate-pulse rounded bg-slate-100" />
+              <div className="h-4 w-20 animate-pulse rounded bg-slate-100" />
+              <div className="h-4 w-24 animate-pulse rounded bg-slate-100" />
+            </div>
+          </div>
+          <div className="mt-5 flex gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-8 w-20 animate-pulse rounded-lg bg-slate-100" />
+            ))}
+          </div>
+          <div className="mt-6 h-10 animate-pulse rounded-xl bg-slate-100" />
         </main>
       </div>
     );
@@ -160,13 +168,14 @@ export default function AdminTicketDetailPage() {
     return (
       <div className="flex flex-1 flex-col">
         <AdminHeader />
-        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 text-center">
-          <p className="text-lg font-medium text-slate-900">
+        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 text-center animate-fade-in">
+          <p className="text-4xl">😕</p>
+          <p className="mt-3 text-lg font-medium text-slate-900">
             {error ?? "Ticket not found"}
           </p>
           <Link
             href="/admin"
-            className="mt-4 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="mt-4 inline-block rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             Back to dashboard
           </Link>
@@ -174,6 +183,8 @@ export default function AdminTicketDetailPage() {
       </div>
     );
   }
+
+  const cat = CATEGORY_CONFIG[ticket.category] ?? CATEGORY_CONFIG.other;
 
   // ── Render ───────────────────────────────────────────────────────
 
@@ -192,14 +203,17 @@ export default function AdminTicketDetailPage() {
 
         {/* Ticket info card */}
         <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h1 className="text-lg font-bold text-slate-900">{ticket.title}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-lg font-bold text-slate-900">{ticket.title}</h1>
+            <StatusBadge status={ticket.status} />
+          </div>
 
           {ticket.description && (
-            <p className="mt-2 text-sm text-slate-600">{ticket.description}</p>
+            <p className="mt-2 text-sm text-slate-600 leading-relaxed">{ticket.description}</p>
           )}
 
           <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
-            <span>{CATEGORY_LABELS[ticket.category] ?? ticket.category}</span>
+            <span>{cat.icon} {cat.label}</span>
             <span>📍 {ticket.room}</span>
             <span>
               {ticket.memberAvatar} {ticket.memberName}
@@ -228,7 +242,16 @@ export default function AdminTicketDetailPage() {
                 {opt.label}
               </button>
             ))}
+            {changingStatus && (
+              <span className="flex items-center text-xs text-slate-400">
+                <span className="mr-1.5 h-3 w-3 animate-spin rounded-full border border-slate-300 border-t-slate-600" />
+                Updating...
+              </span>
+            )}
           </div>
+          {statusError && (
+            <p className="mt-2 text-xs text-red-500 animate-fade-in">{statusError}</p>
+          )}
         </div>
 
         {/* Add comment */}
@@ -238,19 +261,32 @@ export default function AdminTicketDetailPage() {
             <input
               type="text"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e) => {
+                setComment(e.target.value);
+                setCommentError(null);
+              }}
               placeholder="e.g. Ordered the part, arriving Thursday"
               maxLength={500}
-              className="flex-1 rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none"
+              className="flex-1 rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors"
             />
             <button
               type="submit"
               disabled={!comment.trim() || addingComment}
-              className="shrink-0 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="shrink-0 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
             >
-              {addingComment ? "..." : "Post"}
+              {addingComment ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="h-3 w-3 animate-spin rounded-full border border-white/30 border-t-white" />
+                  Posting
+                </span>
+              ) : (
+                "Post"
+              )}
             </button>
           </form>
+          {commentError && (
+            <p className="mt-2 text-xs text-red-500 animate-fade-in">{commentError}</p>
+          )}
         </div>
 
         {/* Event timeline */}
@@ -266,7 +302,6 @@ export default function AdminTicketDetailPage() {
                   key={event.id}
                   className="flex gap-3 rounded-xl border border-slate-100 bg-white px-4 py-3"
                 >
-                  {/* Icon */}
                   <span className="mt-0.5 text-base">
                     {event.type === "status_change"
                       ? "🔄"
@@ -276,21 +311,19 @@ export default function AdminTicketDetailPage() {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    {/* Description */}
                     <p className="text-sm text-slate-700">
                       {event.type === "status_change" && (
                         <>
                           Status changed from{" "}
-                          <span className="font-medium">{event.fromStatus}</span>
+                          <span className="font-medium">{event.fromStatus?.replace("_", " ")}</span>
                           {" "}to{" "}
-                          <span className="font-medium">{event.toStatus}</span>
+                          <span className="font-medium">{event.toStatus?.replace("_", " ")}</span>
                         </>
                       )}
                       {event.type === "comment" && event.message}
                       {event.type === "edit" && (event.message || "Ticket updated")}
                     </p>
 
-                    {/* Meta */}
                     <p className="mt-1 text-xs text-slate-400">
                       {event.actor === "admin" ? "Admin" : ticket.memberName}
                       {" · "}

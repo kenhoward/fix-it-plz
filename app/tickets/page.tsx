@@ -83,10 +83,19 @@ export default function TicketsPage() {
     <div className="flex flex-1 flex-col">
       <Header />
 
-      {/* Success toast — overlays content */}
+      {/* Success toast */}
       {showSuccess && (
-        <div className="fixed top-4 left-1/2 z-20 -translate-x-1/2 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-center text-sm font-medium text-emerald-700 shadow-lg animate-fade-in">
-          Request submitted!
+        <div className="fixed top-4 left-1/2 z-20 -translate-x-1/2 animate-slide-down">
+          <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-medium text-emerald-700 shadow-lg">
+            <span>✓</span> Request submitted!
+            <button
+              onClick={() => setShowSuccess(false)}
+              className="ml-2 text-emerald-400 hover:text-emerald-600"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
@@ -106,23 +115,31 @@ export default function TicketsPage() {
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-28 animate-pulse rounded-2xl bg-slate-200"
-              />
+              <div key={i} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between">
+                  <div className="h-5 w-3/5 animate-pulse rounded bg-slate-200" />
+                  <div className="h-5 w-16 animate-pulse rounded-full bg-slate-100" />
+                </div>
+                <div className="mt-3 h-4 w-4/5 animate-pulse rounded bg-slate-100" />
+                <div className="mt-3 flex gap-3">
+                  <div className="h-3 w-12 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-16 animate-pulse rounded bg-slate-100" />
+                </div>
+              </div>
             ))}
           </div>
         ) : error ? (
-          <div className="py-12 text-center">
-            <p className="text-lg font-medium text-slate-900">
+          <div className="py-12 text-center animate-fade-in">
+            <p className="text-4xl">😕</p>
+            <p className="mt-3 text-lg font-medium text-slate-900">
               Couldn&apos;t load requests
             </p>
             <p className="mt-1 text-sm text-slate-500">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              className="mt-4 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 active:scale-[0.98]"
             >
-              Retry
+              Try Again
             </button>
           </div>
         ) : tickets.length === 0 ? (
