@@ -156,7 +156,7 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
           <button
             key={m.id}
             onClick={() => handleSelectMember(m.id)}
-            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-5 transition-all active:scale-95 ${
+            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-5 transition-all active:scale-95 last:odd:col-span-2 last:odd:mx-auto last:odd:w-1/2 ${
               selectedId === m.id
                 ? "border-indigo-500 bg-indigo-50 shadow-md"
                 : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
