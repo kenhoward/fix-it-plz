@@ -18,15 +18,16 @@ export async function GET() {
   const snap = await adminDb
     .collection("tickets")
     .where("createdBy", "==", memberId)
-    .orderBy("createdAt", "desc")
     .get();
 
-  const tickets = snap.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-    createdAt: doc.data().createdAt?.toDate().toISOString(),
-    updatedAt: doc.data().updatedAt?.toDate().toISOString(),
-  }));
+  const tickets = snap.docs
+    .map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate().toISOString(),
+      updatedAt: doc.data().updatedAt?.toDate().toISOString(),
+    }))
+    .sort((a, b) => (b.createdAt as string).localeCompare(a.createdAt as string));
 
   return Response.json({ tickets });
 }
