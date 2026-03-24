@@ -203,7 +203,9 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
           />
 
           {error && (
-            <p className="mt-2 text-center text-sm text-red-600">{error}</p>
+            <div className="mt-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-center text-sm text-red-600 animate-fade-in">
+              {error}
+            </div>
           )}
 
           <button

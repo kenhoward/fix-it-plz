@@ -113,7 +113,9 @@ export default function AdminLoginPage() {
           </div>
 
           {error && (
-            <p className="text-center text-sm text-red-600">{error}</p>
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-center text-sm text-red-600 animate-fade-in">
+              {error}
+            </div>
           )}
 
           <button

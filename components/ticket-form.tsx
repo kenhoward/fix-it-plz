@@ -18,11 +18,18 @@ export function TicketForm() {
   const [room, setRoom] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const isValid = title.trim() && category && room.trim();
 
+  function handleBlur(field: string) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Mark all fields as touched on submit attempt
+    setTouched({ title: true, category: true, room: true });
     if (!isValid) return;
 
     setSubmitting(true);
@@ -76,10 +83,18 @@ export function TicketForm() {
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onBlur={() => handleBlur("title")}
           placeholder="e.g. Kitchen light is flickering"
           maxLength={100}
-          className="mt-1.5 block w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none"
+          className={`mt-1.5 block w-full rounded-xl border-2 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors ${
+            touched.title && !title.trim()
+              ? "border-red-300"
+              : "border-slate-200"
+          }`}
         />
+        {touched.title && !title.trim() && (
+          <p className="mt-1 text-xs text-red-500">Please enter a title</p>
+        )}
       </div>
 
       {/* Description */}
@@ -97,8 +112,13 @@ export function TicketForm() {
           placeholder="Add any extra info..."
           rows={3}
           maxLength={500}
-          className="mt-1.5 block w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none resize-none"
+          className="mt-1.5 block w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
         />
+        {description.length > 400 && (
+          <p className="mt-1 text-xs text-slate-400 text-right">
+            {description.length}/500
+          </p>
+        )}
       </div>
 
       {/* Category */}
@@ -111,11 +131,16 @@ export function TicketForm() {
             <button
               key={cat.value}
               type="button"
-              onClick={() => setCategory(cat.value)}
+              onClick={() => {
+                setCategory(cat.value);
+                setTouched((prev) => ({ ...prev, category: true }));
+              }}
               className={`flex flex-col items-center gap-1 rounded-xl border-2 py-3 text-sm transition-all active:scale-95 ${
                 category === cat.value
                   ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                  : touched.category && !category
+                    ? "border-red-200 bg-white text-slate-600 hover:border-slate-300"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
               }`}
             >
               <span className="text-xl">{cat.icon}</span>
@@ -123,6 +148,9 @@ export function TicketForm() {
             </button>
           ))}
         </div>
+        {touched.category && !category && (
+          <p className="mt-1 text-xs text-red-500">Please select a category</p>
+        )}
       </div>
 
       {/* Room */}
@@ -138,22 +166,32 @@ export function TicketForm() {
           type="text"
           value={room}
           onChange={(e) => setRoom(e.target.value)}
+          onBlur={() => handleBlur("room")}
           placeholder="e.g. Kitchen, Bathroom, Garage"
           maxLength={50}
-          className="mt-1.5 block w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none"
+          className={`mt-1.5 block w-full rounded-xl border-2 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors ${
+            touched.room && !room.trim()
+              ? "border-red-300"
+              : "border-slate-200"
+          }`}
         />
+        {touched.room && !room.trim() && (
+          <p className="mt-1 text-xs text-red-500">Please enter a room</p>
+        )}
       </div>
 
       {/* Error */}
       {error && (
-        <p className="text-center text-sm text-red-600">{error}</p>
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-600">
+          {error}
+        </div>
       )}
 
       {/* Submit */}
       <button
         type="submit"
         disabled={!isValid || submitting}
-        className="mt-2 w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
+        className="mt-2 w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
       >
         {submitting ? (
           <span className="flex items-center justify-center gap-2">

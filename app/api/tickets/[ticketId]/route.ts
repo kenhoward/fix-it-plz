@@ -22,6 +22,20 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Fetch events subcollection for the activity timeline
+  const eventsSnap = await adminDb
+    .collection("tickets")
+    .doc(ticketId)
+    .collection("events")
+    .orderBy("createdAt", "desc")
+    .get();
+
+  const events = eventsSnap.docs.map((e) => ({
+    id: e.id,
+    ...e.data(),
+    createdAt: e.data().createdAt?.toDate().toISOString(),
+  }));
+
   return Response.json({
     ticket: {
       id: doc.id,
@@ -29,6 +43,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
       createdAt: doc.data()?.createdAt?.toDate().toISOString(),
       updatedAt: doc.data()?.updatedAt?.toDate().toISOString(),
     },
+    events,
   });
 }
 
