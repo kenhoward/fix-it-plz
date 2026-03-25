@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/hooks/use-auth";
 
 interface MemberOption {
@@ -21,6 +21,28 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
   const [code, setCode] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [panelHeight, setPanelHeight] = useState(0);
+
+  // Measure the fixed bottom panel so we can add matching padding to the grid.
+  // Uses a ref callback + ResizeObserver to stay in sync if the panel resizes
+  // (e.g. error message appears).
+  const panelRef = useCallback((node: HTMLFormElement | null) => {
+    if (!node) {
+      setPanelHeight(0);
+      return;
+    }
+    setPanelHeight(node.getBoundingClientRect().height);
+    const observer = new ResizeObserver(() => {
+      setPanelHeight(node.getBoundingClientRect().height);
+    });
+    observer.observe(node);
+  }, []);
+
+  // Reset scroll to top on mount so a remembered member doesn't cause
+  // the page to load partway down the list.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     async function fetchMembers() {
@@ -141,7 +163,7 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
 
   // ── Main verification flow ─────────────────────────────────────────
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 animate-fade-in">
+    <div className="flex flex-1 flex-col items-center justify-start md:justify-center px-6 py-12 animate-fade-in">
       {/* App title */}
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold text-slate-900">
@@ -150,8 +172,11 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
         <p className="mt-2 text-slate-500">Who&apos;s reporting?</p>
       </div>
 
-      {/* Member grid */}
-      <div className="grid w-full max-w-sm grid-cols-2 gap-3">
+      {/* Member grid — dynamic bottom padding on mobile matches panel height */}
+      <div
+        className="grid w-full max-w-sm grid-cols-2 gap-3 md:!pb-0"
+        style={selectedMember && panelHeight > 0 ? { paddingBottom: `${panelHeight + 16}px` } : undefined}
+      >
         {members.map((m) => (
           <button
             key={m.id}
@@ -174,11 +199,19 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
         ))}
       </div>
 
-      {/* Code input — appears when a member is selected */}
+      {/* Code input — fixed bottom panel on mobile, inline on desktop */}
       {selectedMember && (
         <form
+          ref={panelRef}
           onSubmit={handleSubmit}
-          className="mt-6 w-full max-w-sm animate-slide-down"
+          className="
+            fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-sm
+            px-6 pt-4 pb-6 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]
+            [padding-bottom:calc(1.5rem+env(safe-area-inset-bottom))]
+            animate-slide-up
+            md:static md:inset-auto md:z-auto md:border-t-0 md:bg-transparent md:backdrop-blur-none
+            md:mt-6 md:w-full md:max-w-sm md:px-0 md:pt-0 md:pb-0 md:shadow-none md:animate-slide-down
+          "
         >
           <label
             htmlFor="code"
@@ -197,7 +230,6 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
               setError(null);
             }}
             placeholder="••••••"
-            autoFocus
             autoComplete="off"
             className="mt-2 block w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-center text-lg tracking-widest placeholder:text-slate-300 focus:border-indigo-500 focus:outline-none"
           />
@@ -211,7 +243,7 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
           <button
             type="submit"
             disabled={verifying || code.trim().length === 0}
-            className="mt-4 w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
+            className="mt-3 w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
           >
             {verifying ? (
               <span className="flex items-center justify-center gap-2">
