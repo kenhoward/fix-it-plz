@@ -61,6 +61,8 @@ export default function AdminTicketDetailPage() {
   const [comment, setComment] = useState("");
   const [addingComment, setAddingComment] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !authenticated) {
@@ -125,6 +127,20 @@ export default function AdminTicketDetailPage() {
       setCommentError(err instanceof Error ? err.message : "Failed to add note");
     } finally {
       setAddingComment(false);
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/tickets/${ticketId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete ticket");
+      router.replace("/admin");
+    } catch {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   }
 
@@ -251,6 +267,36 @@ export default function AdminTicketDetailPage() {
           </div>
           {statusError && (
             <p className="mt-2 text-xs text-red-500 animate-fade-in">{statusError}</p>
+          )}
+        </div>
+
+        {/* Delete */}
+        <div className="mt-5">
+          {!showDeleteConfirm ? (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 transition-all hover:bg-red-50 hover:text-red-600"
+            >
+              Delete ticket
+            </button>
+          ) : (
+            <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 animate-fade-in">
+              <p className="text-sm text-red-600">Permanently delete this ticket?</p>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Yes, delete"}
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
           )}
         </div>
 
