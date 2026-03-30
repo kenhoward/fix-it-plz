@@ -2,8 +2,9 @@ import { verifyAdminSession } from "@/lib/auth/admin-session";
 import { adminDb } from "@/lib/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
 
-// GET  /api/admin/tickets/:ticketId — ticket detail + events + member info
-// PATCH /api/admin/tickets/:ticketId — change ticket status
+// GET    /api/admin/tickets/:ticketId — ticket detail + events + member info
+// PATCH  /api/admin/tickets/:ticketId — change ticket status
+// DELETE /api/admin/tickets/:ticketId — permanently delete ticket + events
 
 type RouteParams = { params: Promise<{ ticketId: string }> };
 
@@ -101,6 +102,32 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       actor: "admin",
       createdAt: FieldValue.serverTimestamp(),
     });
+
+  return Response.json({ success: true });
+}
+
+export async function DELETE(_request: Request, { params }: RouteParams) {
+  const claims = await verifyAdminSession();
+  if (!claims) {
+    return Response.json({ error: "Not authorized" }, { status: 401 });
+  }
+
+  const { ticketId } = await params;
+  const ticketRef = adminDb.collection("tickets").doc(ticketId);
+  const doc = await ticketRef.get();
+
+  if (!doc.exists) {
+    return Response.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Delete all events in the subcollection first
+  const eventsSnap = await ticketRef.collection("events").get();
+  const batch = adminDb.batch();
+  for (const eventDoc of eventsSnap.docs) {
+    batch.delete(eventDoc.ref);
+  }
+  batch.delete(ticketRef);
+  await batch.commit();
 
   return Response.json({ success: true });
 }
