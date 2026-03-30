@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/hooks/use-auth";
 
 interface MemberOption {
@@ -169,7 +170,7 @@ export function VerifyScreen({ onVerified }: { onVerified: () => void }) {
         <h1 className="text-3xl font-bold text-slate-900">
           🔧 Fix It Plz
         </h1>
-        <p className="mt-2 text-slate-500">Who&apos;s reporting?</p>
+        <p className="mt-2 text-slate-500">Who's reporting<Link href="/admin/login">?</Link></p>
       </div>
 
       {/* Member grid — dynamic bottom padding on mobile matches panel height */}

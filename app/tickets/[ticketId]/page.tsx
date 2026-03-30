@@ -189,7 +189,7 @@ export default function TicketDetailPage() {
             href="/tickets"
             className="mt-4 inline-block rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
-            Back to My Requests
+            &larr; Back to My Requests
           </Link>
         </main>
       </div>

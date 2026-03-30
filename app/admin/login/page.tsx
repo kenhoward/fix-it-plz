@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
@@ -79,6 +80,9 @@ export default function AdminLoginPage() {
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-slate-900">🔧 Admin Login</h1>
           <p className="mt-2 text-sm text-slate-500">Fix It Plz dashboard</p>
+          <Link href="/" className="mt-2 inline-block text-sm text-indigo-600 hover:text-indigo-700">
+            &larr; Back to family login
+          </Link>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
