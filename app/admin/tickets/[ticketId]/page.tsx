@@ -267,7 +267,7 @@ export default function AdminTicketDetailPage() {
               }}
               placeholder="e.g. Ordered the part, arriving Thursday"
               maxLength={500}
-              className="flex-1 rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors"
+              className="flex-1 rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-base placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors"
             />
             <button
               type="submit"

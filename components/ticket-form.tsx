@@ -86,7 +86,7 @@ export function TicketForm() {
           onBlur={() => handleBlur("title")}
           placeholder="e.g. Kitchen light is flickering"
           maxLength={100}
-          className={`mt-1.5 block w-full rounded-xl border-2 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors ${
+          className={`mt-1.5 block w-full rounded-xl border-2 bg-white px-4 py-3 text-base placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors ${
             touched.title && !title.trim()
               ? "border-red-300"
               : "border-slate-200"
@@ -112,7 +112,7 @@ export function TicketForm() {
           placeholder="Add any extra info..."
           rows={3}
           maxLength={500}
-          className="mt-1.5 block w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+          className="mt-1.5 block w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-base placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
         />
         {description.length > 400 && (
           <p className="mt-1 text-xs text-slate-400 text-right">
@@ -169,7 +169,7 @@ export function TicketForm() {
           onBlur={() => handleBlur("room")}
           placeholder="e.g. Kitchen, Bathroom, Garage"
           maxLength={50}
-          className={`mt-1.5 block w-full rounded-xl border-2 bg-white px-4 py-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors ${
+          className={`mt-1.5 block w-full rounded-xl border-2 bg-white px-4 py-3 text-base placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none transition-colors ${
             touched.room && !room.trim()
               ? "border-red-300"
               : "border-slate-200"
