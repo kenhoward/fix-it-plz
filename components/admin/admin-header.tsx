@@ -25,6 +25,15 @@ export function AdminHeader() {
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
       <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
+            </svg>
+            Home
+          </Link>
           <span className="text-sm font-bold text-slate-900">
             🔧 Admin
           </span>
